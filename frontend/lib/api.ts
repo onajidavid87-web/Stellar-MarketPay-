@@ -918,3 +918,23 @@ export async function unfreezeWallet(address: string) {
   return data;
 }
 
+
+export async function uploadPortfolioItem(publicKey: string, file: File, title?: string) {
+  const formData = new FormData();
+  formData.append("file", file);
+  if (title) formData.append("title", title);
+
+  const { data } = await api.post<{ success: boolean; data: any }>(
+    `/api/profiles/${encodeURIComponent(publicKey)}/portfolio`,
+    formData,
+    { headers: { "Content-Type": "multipart/form-data" }, timeout: 60000 }
+  );
+  return data.data;
+}
+
+export async function deletePortfolioItem(publicKey: string, itemId: string) {
+  const { data } = await api.delete<{ success: boolean; data: { deleted: boolean } }>(
+    `/api/profiles/${encodeURIComponent(publicKey)}/portfolio/${encodeURIComponent(itemId)}`
+  );
+  return data.data;
+}

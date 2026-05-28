@@ -31,7 +31,7 @@ const webauthnRoutes  = require("./routes/webauthn");
 const disputeRoutes   = require("./routes/disputes");
 const adminRoutes     = require("./routes/admin");
 const pool            = require("./db/pool");
-const migrate         = require("./db/migrate");
+const { migrate } = require("./db/migrate");
 const IndexerService  = require("./services/indexerService");
 const PriceAlertService = require("./services/priceAlertService");
 
@@ -353,6 +353,10 @@ async function bootstrap() {
       nodeEnv: process.env.NODE_ENV || "development",
     }, 'Stellar MarketPay API server started');
   });
+  } catch (err) {
+    logError(serviceLogger, err, { operation: "bootstrap" });
+    process.exit(1);
+  }
 }
 
 /**
@@ -452,8 +456,7 @@ async function startNotificationProcessor() {
     }
   }, 2 * 60 * 1000).unref();
 }
-}
-
 bootstrap();
 
 module.exports = app;
+
