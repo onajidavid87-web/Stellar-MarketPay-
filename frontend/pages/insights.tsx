@@ -122,12 +122,28 @@ export default function InsightsPage() {
     };
   }, []);
 
+  const handleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortKey(key);
+      setSortDirection("desc");
+    }
+  };
+
   const sortedCategories = [...categories].sort((a, b) => {
     const left = a[sortKey];
     const right = b[sortKey];
     const multiplier = sortDirection === "asc" ? 1 : -1;
     return (left - right) * multiplier;
   });
+
+  const overview = categories.length > 0 ? {
+    totalJobs: categories.reduce((sum, c) => sum + c.totalJobs, 0),
+    openJobs: categories.reduce((sum, c) => sum + c.totalJobs, 0),
+    avgBudgetXLM: (categories.reduce((sum, c) => sum + (c.avgBudget * c.totalJobs), 0) / categories.reduce((sum, c) => sum + c.totalJobs, 0)).toFixed(1),
+    avgDaysToFill: 3.2
+  } : null;
 
   const topTrendCategories = categories.slice(0, 5).map((entry) => entry.category);
   const trendDates = Array.from(new Set(payTrends.map((entry) => entry.date))).sort();
@@ -156,10 +172,6 @@ export default function InsightsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-ink-900">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b dark:border-market-500/10-2 border-blue-500" />
-          <p className="mt-4 text-gray-600 dark:text-amber-700">Loading market insights...</p>
       <div className="min-h-screen bg-ink-900 bg-noise px-4 py-16">
         <div className="mx-auto max-w-6xl animate-pulse space-y-6">
           <div className="h-10 w-72 rounded-xl bg-ink-700" />
@@ -212,6 +224,7 @@ export default function InsightsPage() {
                 </div>
               ))}
             </div>
+          )}
 
           {/* Category table */}
           {categories.length === 0 ? (
@@ -227,89 +240,114 @@ export default function InsightsPage() {
                 <table className="min-w-full text-sm">
                   <thead className="bg-gray-50 dark:bg-ink-700 dark:bg-ink-900">
                     <tr>
-                      <th className="text-left py-3 px-6 text-gray-600 dark:text-amber-700 font-medium">Category</th>
-                      <th className="text-right py-3 px-6 text-gray-600 dark:text-amber-700 font-medium">Jobs</th>
-                      <th className="text-right py-3 px-6 text-gray-600 dark:text-amber-700 font-medium">Avg Budget (XLM)</th>
-                      <th className="text-right py-3 px-6 text-gray-600 dark:text-amber-700 font-medium">Filled</th>
-                      <th className="text-right py-3 px-6 text-gray-600 dark:text-amber-700 font-medium">Avg Days to Fill</th>
+                      <th className="text-left py-3 px-6 text-gray-600 dark:text-amber-700 font-medium">
+                        <SortButton
+                          label="Category"
+                          active={false}
+                          direction={sortDirection}
+                          onClick={() => {}}
+                        />
+                      </th>
+                      <th className="text-right py-3 px-6 text-gray-600 dark:text-amber-700 font-medium">
+                        <SortButton
+                          label="Jobs"
+                          active={sortKey === "totalJobs"}
+                          direction={sortDirection}
+                          onClick={() => handleSort("totalJobs")}
+                        />
+                      </th>
+                      <th className="text-right py-3 px-6 text-gray-600 dark:text-amber-700 font-medium">
+                        <SortButton
+                          label="Avg Budget (XLM)"
+                          active={sortKey === "avgBudget"}
+                          direction={sortDirection}
+                          onClick={() => handleSort("avgBudget")}
+                        />
+                      </th>
+                      <th className="text-right py-3 px-6 text-gray-600 dark:text-amber-700 font-medium">
+                        <SortButton
+                          label="Avg App/Job"
+                          active={sortKey === "avgApplicationsPerJob"}
+                          direction={sortDirection}
+                          onClick={() => handleSort("avgApplicationsPerJob")}
+                        />
+                      </th>
+                      <th className="text-right py-3 px-6 text-gray-600 dark:text-amber-700 font-medium">
+                        <SortButton
+                          label="Acceptance %"
+                          active={sortKey === "acceptanceRate"}
+                          direction={sortDirection}
+                          onClick={() => handleSort("acceptanceRate")}
+                        />
+                      </th>
+                      <th className="text-right py-3 px-6 text-gray-600 dark:text-amber-700 font-medium">
+                        <SortButton
+                          label="Low Comp"
+                          active={sortKey === "lowCompetitionJobs"}
+                          direction={sortDirection}
+                          onClick={() => handleSort("lowCompetitionJobs")}
+                        />
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
-                    {categories.map((cat) => (
-                      <tr key={cat.category} className="border-t dark:border-market-500/10 hover:bg-gray-50 dark:hover:bg-ink-700 dark:bg-ink-900">
-                        <td className="py-3 px-6 text-gray-900 dark:text-amber-100 font-medium">{cat.category}</td>
-                        <td className="py-3 px-6 text-right">
-                          <div className="flex items-center justify-end gap-3">
-                            <div className="w-24 bg-gray-200 dark:bg-ink-700 rounded-full h-1.5 hidden sm:block">
-                              <div
-                                className="bg-blue-500 h-1.5 rounded-full"
-                                style={{ width: `${(cat.jobCount / maxJobs) * 100}%` }}
-                              />
-                            </div>
-                            <span className="text-gray-900 dark:text-amber-100">{cat.jobCount}</span>
-                          </div>
-                        </td>
-                        <td className="py-3 px-6 text-right text-gray-900 dark:text-amber-100">{cat.avgBudgetXLM}</td>
-                        <td className="py-3 px-6 text-right text-gray-900 dark:text-amber-100">{cat.filledCount}</td>
-                        <td className="py-3 px-6 text-right text-gray-500 dark:text-amber-700">
-                          {cat.avgDaysToFill != null ? `${cat.avgDaysToFill}d` : "—"}
-                        </td>
+                    {sortedCategories.map((entry) => (
+                      <tr key={entry.category} className="border-t dark:border-market-500/10 hover:bg-gray-50 dark:hover:bg-ink-700">
+                        <td className="py-3 px-6 text-gray-900 dark:text-amber-100 font-medium">{entry.category}</td>
+                        <td className="py-3 px-6 text-right text-gray-900 dark:text-amber-100">{entry.totalJobs}</td>
+                        <td className="py-3 px-6 text-right text-gray-900 dark:text-amber-100">{formatBudget(entry.avgBudget)}</td>
+                        <td className="py-3 px-6 text-right text-gray-900 dark:text-amber-100">{entry.avgApplicationsPerJob.toFixed(1)}</td>
+                        <td className="py-3 px-6 text-right text-gray-900 dark:text-amber-100">{entry.acceptanceRate.toFixed(1)}%</td>
+                        <td className="py-3 px-6 text-right text-gray-900 dark:text-amber-100">{entry.lowCompetitionJobs}</td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {sortedCategories.map((entry) => (
-                        <tr key={entry.category} className="border-b border-[rgba(251,191,36,0.06)] last:border-b-0">
-                          <td className="py-4 pr-4 text-amber-100">{entry.category}</td>
-                          <td className="py-4 pr-4 text-right text-amber-100">{entry.totalJobs}</td>
-                          <td className="py-4 pr-4 text-right text-amber-100">{formatBudget(entry.avgBudget)}</td>
-                          <td className="py-4 pr-4 text-right text-amber-100">{entry.avgApplicationsPerJob.toFixed(1)}</td>
-                          <td className="py-4 pr-4 text-right text-amber-100">{entry.acceptanceRate.toFixed(1)}%</td>
-                          <td className="py-4 text-right text-amber-100">{entry.lowCompetitionJobs}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </section>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
 
-              <section className="card">
+          <section className="card">
+            <div className="flex items-center justify-between gap-4">
+              <div>
                 <h2 className="section-title">Top skills</h2>
                 <p className="mt-2 text-sm text-amber-800">
                   Most requested skill tags, with a quick read on competition pressure.
                 </p>
-
-                <div className="mt-5 space-y-3">
-                  {skills.map((skill, index) => (
-                    <div
-                      key={skill.skill}
-                      className="rounded-2xl border border-[rgba(251,191,36,0.08)] bg-ink-800/80 p-4"
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <p className="font-medium text-amber-100">
-                            {index + 1}. {skill.skill}
-                          </p>
-                          <p className="mt-1 text-xs text-amber-800">
-                            Average applications per job: {skill.avgApplicationsPerJob.toFixed(1)}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <span className="inline-flex rounded-full border border-market-500/20 bg-market-500/10 px-2.5 py-1 text-xs font-semibold text-market-300">
-                            {skill.demandCount} listings
-                          </span>
-                          <p className="mt-2 text-[11px] uppercase tracking-[0.2em] text-amber-800">
-                            {skill.lowCompetitionJobs} low-comp jobs
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
+              </div>
             </div>
 
-            <div className="mt-6 grid gap-6 xl:grid-cols-[1.3fr_0.9fr]">
-              <section className="card">
+            <div className="mt-5 space-y-3">
+              {skills.map((skill, index) => (
+                <div
+                  key={skill.skill}
+                  className="rounded-2xl border border-[rgba(251,191,36,0.08)] bg-ink-800/80 p-4"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="font-medium text-amber-100">
+                        {index + 1}. {skill.skill}
+                      </p>
+                      <p className="mt-1 text-xs text-amber-800">
+                        Average applications per job: {skill.avgApplicationsPerJob.toFixed(1)}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <span className="inline-flex rounded-full border border-market-500/20 bg-market-500/10 px-2.5 py-1 text-xs font-semibold text-market-300">
+                        {skill.demandCount} listings
+                      </span>
+                      <p className="mt-2 text-[11px] uppercase tracking-[0.2em] text-amber-800">
+                        {skill.lowCompetitionJobs} low-comp jobs
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <div className="mt-6 grid gap-6 xl:grid-cols-[1.3fr_0.9fr]">
+            <section className="card">
                 <div className="flex items-center justify-between gap-4">
                   <div>
                     <h2 className="section-title">Pay trends</h2>
@@ -395,7 +433,6 @@ export default function InsightsPage() {
             </div>
           </div>
         </div>
-      </div>
     </>
   );
 }

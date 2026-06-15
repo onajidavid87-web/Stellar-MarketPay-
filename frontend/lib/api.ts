@@ -23,6 +23,8 @@ import type {
   SkillBadge,
   BulkActionResponse,
   NotificationItem,
+  ProfileStats,
+  ResponseTime,
 } from "@/utils/types";
 
 const api = axios.create({
@@ -510,14 +512,6 @@ export async function fetchProfile(publicKey: string) {
   return data.data;
 }
 
-export async function fetchProfileStats(publicKey: string) {
-  const { data } = await api.get<{
-    success: boolean;
-    data: { totalApplications: number; acceptedApplications: number; successRate: number };
-  }>(`/api/profiles/${encodeURIComponent(publicKey)}/stats`);
-  return data.data;
-}
-
 export async function fetchProfileResponseTime(publicKey: string) {
   const { data } = await api.get<{
     success: boolean;
@@ -549,26 +543,6 @@ export async function fetchProfiles(params?: {
   const { data } = await api.get<{ success: boolean; data: UserProfile[] }>(
     "/api/profiles",
     { params },
-  );
-  return data.data;
-}
-
-export async function fetchSkillEndorsements(publicKey: string): Promise<SkillEndorsement[]> {
-  const { data } = await api.get<{ success: boolean; data: SkillEndorsement[] }>(
-    `/api/profiles/${encodeURIComponent(publicKey)}/endorsements`,
-  );
-  return data.data;
-}
-
-export async function endorseSkill(publicKey: string, skill: string) {
-  await api.post(`/api/profiles/${encodeURIComponent(publicKey)}/endorse`, {
-    skill,
-  });
-}
-
-export async function fetchSkillBadges(publicKey: string): Promise<SkillBadge[]> {
-  const { data } = await api.get<{ success: boolean; data: SkillBadge[] }>(
-    `/api/assessments/results/${encodeURIComponent(publicKey)}`,
   );
   return data.data;
 }

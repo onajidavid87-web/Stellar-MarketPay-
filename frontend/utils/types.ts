@@ -150,19 +150,6 @@ export interface UserProfile {
   blockedAddresses?: string[];
 }
 
-export interface SkillEndorsement {
-  skill: string;
-  count: number;
-  endorsers: string[];
-}
-
-export interface SkillBadge {
-  skill: string;
-  score: number;
-  passed: boolean;
-  taken_at: string;
-}
-
 export interface ProfileStats {
   totalApplications: number;
   acceptedApplications: number;
@@ -250,21 +237,6 @@ export interface PortfolioFile {
   mimeType: string;
   size: number;
   uploadedAt: string;
-}
-
-export interface JobAnalytics {
-  applicationsPerDay: { day: string; count: number }[];
-  averageBidAmount: { currency: string; avgBid: number; count: number }[];
-  applicationStatusCounts: { pending?: number; accepted?: number; rejected?: number; [key: string]: number | undefined };
-  skillDistribution: Record<string, number>;
-  daysToHire: number | null;
-  timeToHire?: number | null;
-}
-
-export interface AssessmentQuestion {
-  id: number;
-  question: string;
-  options: string[];
 }
 
 export interface TokenInfo {
@@ -372,11 +344,12 @@ export interface JobAnalytics {
     bidAmount: string;
     createdAt: string;
   }>;
-  applicationsPerDay: Array<{ day: string; count: number }>;
-  averageBidAmount: Array<{ currency: string; avgBid: number; count: number }>;
+  applicationsPerDay: { day: string; count: number }[];
+  averageBidAmount: { currency: string; avgBid: number; count: number }[];
+  applicationStatusCounts: { pending?: number; accepted?: number; rejected?: number; [key: string]: number | undefined };
   skillDistribution: Record<string, number>;
   daysToHire: number | null;
-  applicationStatusCounts: Record<string, number>;
+  timeToHire?: number | null;
 }
 
 // ─── Bulk Actions ────────────────────────────────────────────────────────────

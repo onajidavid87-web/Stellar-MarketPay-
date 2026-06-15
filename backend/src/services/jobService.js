@@ -7,6 +7,7 @@
 
 const pool = require("../db/pool");
 const { refreshFreelancerTier } = require("./profileService");
+const { createJobNotification, EVENT_TYPES } = require("./notificationService");
 
 /**
  * Camel-cased job record returned by this service.
@@ -241,7 +242,7 @@ function rowToJob(row) {
  *   clientAddress: 'GBX...',
  * });
  */
-async function createJob({ title, description, budget, currency, category, skills, deadline, timezone, clientAddress, screeningQuestions, visibility = "public" }) {
+async function createJob({ title, description, budget, currency, category, skills, deadline, timezone, clientAddress, screeningQuestions, milestones, visibility = "public" }) {
   validatePublicKey(clientAddress);
 
   if (!title || title.length < 10) {
@@ -718,14 +719,16 @@ async function boostJob(jobId, txHash, boostDays = 7) {
  * @throws {Error} If the job is not found.
  */
 async function incrementShareCount(jobId) {
-  const { rows } = await pool.query(
-    "UPDATE jobs SET share_count = COALESCE(share_count, 0) + 1, updated_at = NOW() WHERE id = $1 RETURNING *",
+  const { rowCount } = await pool.query(
+    "UPDATE jobs SET share_count = COALESCE(share_count, 0) + 1, updated_at = NOW() WHERE id = $1",
     [jobId],
   );
 
-  const e = new Error("Job not found");
-  e.status = 404;
-  throw e;
+  if (!rowCount) {
+    const e = new Error("Job not found");
+    e.status = 404;
+    throw e;
+  }
 }
 
 async function raiseDispute(jobId, { reason, description, raisedBy }) {

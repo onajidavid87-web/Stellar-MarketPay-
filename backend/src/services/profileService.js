@@ -469,58 +469,6 @@ async function listProfiles({ role, availability, search, limit = 50 } = {}) {
   return rows.map(rowToProfile);
 }
 
-async function getProfileStats(publicKey) {
-  validatePublicKey(publicKey);
-
-  const { rows } = await pool.query(
-    `SELECT
-       COUNT(*)::int AS total_applications,
-       SUM(CASE WHEN status = 'accepted' THEN 1 ELSE 0 END)::int AS accepted_applications
-     FROM applications
-     WHERE freelancer_address = $1`,
-    [publicKey],
-  );
-
-  const totalApplications = Number(rows[0]?.total_applications || 0);
-  const acceptedApplications = Number(rows[0]?.accepted_applications || 0);
-
-  return {
-    totalApplications,
-    acceptedApplications,
-    successRate: totalApplications ? Math.round((acceptedApplications / totalApplications) * 100) : 0,
-  };
-}
-
-async function getResponseTime(publicKey) {
-  validatePublicKey(publicKey);
-
-  const { rows } = await pool.query(
-    `SELECT
-       ROUND(AVG(EXTRACT(EPOCH FROM (NOW() - created_at)) / 86400)::numeric, 1) AS avg_days
-     FROM messages
-     WHERE receiver_address = $1
-       AND read = true`,
-    [publicKey],
-  );
-
-  return {
-    averageDays: rows[0]?.avg_days !== null ? parseFloat(rows[0].avg_days) : null,
-  };
-}
-
-function calculateFreelancerTier(completedJobs, rating) {
-  if (completedJobs >= 30 && rating !== null && rating >= 4.8) {
-    return "Top Talent";
-  }
-  if (completedJobs >= 15 && rating !== null && rating >= 4.5) {
-    return "Expert";
-  }
-  if (completedJobs >= 5 && rating !== null && rating >= 4.0) {
-    return "Rising Star";
-  }
-  return "Newcomer";
-}
-
 async function isBlocked(clientPublicKey, freelancerAddress) {
   validatePublicKey(clientPublicKey);
   validatePublicKey(freelancerAddress);
@@ -640,30 +588,6 @@ async function endorseSkill({ skill, endorserAddress, recipientAddress }) {
      ON CONFLICT (skill, endorser_address, recipient_address) DO NOTHING`,
     [skill.trim(), endorserAddress, recipientAddress]
   );
-}
-
-/**
- * Verify a user's identity by storing a DID hash.
- * @param {string} publicKey
- * @param {string} didHash
- * @returns {Promise<Object>}
- */
-async function verifyIdentity(publicKey, didHash) {
-  validatePublicKey(publicKey);
-  if (!didHash || typeof didHash !== "string") {
-    throw createValidationError("didHash is required");
-  }
-  const { rows } = await pool.query(
-    `UPDATE profiles SET did_hash = $1, is_kyc_verified = true, updated_at = NOW()
-     WHERE public_key = $2 RETURNING *`,
-    [didHash.trim(), publicKey]
-  );
-  if (!rows.length) {
-    const e = new Error("Profile not found");
-    e.status = 404;
-    throw e;
-  }
-  return rowToProfile(rows[0]);
 }
 
 /**

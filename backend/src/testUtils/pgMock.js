@@ -214,6 +214,21 @@ function createPgMock() {
       return { rows: invitations.has(key) ? [{ ok: 1 }] : [] };
     }
 
+    if (text.startsWith("INSERT INTO notifications")) {
+      const row = {
+        id: Math.floor(Math.random() * 100000),
+        user_address: params[0],
+        type: params[1],
+        title: params[2],
+        body: params[3],
+        read: false,
+        job_id: params[4],
+        link_path: params[5],
+        created_at: new Date().toISOString(),
+      };
+      return { rows: [row] };
+    }
+
     return { rows: [] };
   });
 

@@ -272,6 +272,7 @@ export default function JobDetail({ publicKey, onConnect }: JobDetailProps) {
                     </a>
                   </div>
                 </div>
+            </div>
           </div>
 
           <div className="prose prose-sm max-w-none">
@@ -425,32 +426,6 @@ export default function JobDetail({ publicKey, onConnect }: JobDetailProps) {
                   The freelancer did not start work within the timeout period. You can claim a refund.
                 </p>
                 <WalletConnect onConnect={onConnect} />
-              </div>
-            ) : hasApplied ? (
-              <div className="card text-center py-8 border-market-500/20">
-                <p className="text-market-400 font-medium mb-1">Application submitted</p>
-                <p className="text-amber-800 text-sm">
-                  The client will review your proposal shortly.
-                </p>
-              </div>
-            ) : showApplyForm ? (
-              <ApplicationForm
-                job={job}
-                publicKey={publicKey}
-                prefillData={prefillData}
-                onSuccess={() => {
-                  setShowApplyForm(false);
-                  fetchApplications(job.id).then(setApplications);
-                }}
-              />
-            ) : (
-              <div className="text-center">
-                <button
-                  onClick={() => setShowApplyForm(true)}
-                  className="btn-primary text-sm sm:text-base px-6 sm:px-10 py-2.5 sm:py-3.5 w-full sm:w-auto"
-                >
-                  Apply for this Job
-                </button>
               </div>
             ) : (
               <p className="text-sm text-amber-700">

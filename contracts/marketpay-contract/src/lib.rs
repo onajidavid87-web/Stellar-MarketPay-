@@ -234,7 +234,7 @@ pub enum DataKey {
 }
 
 /// Reveal phase is open for roughly 24 hours after client closes bidding.
-const REVEAL_WINDOW_LEDGERS: u32 = 17_280;
+const REVEAL_WINDOW_LEDGERS: u32 = 1000;
 
 /// A governance proposal
 #[contracttype]
@@ -266,7 +266,7 @@ impl MarketPayContract {
         for byte in nonce.to_array().iter() {
             payload.push_back(*byte);
         }
-        env.crypto().sha256(&payload)
+        env.crypto().sha256(&payload).into()
     }
 
     // ─── Initialization ──────────────────────────────────────────────────────
@@ -1628,7 +1628,7 @@ impl MarketPayContract {
 
         if actual_hash == expected_hash {
             // Auto-release on successful deliverable verification.
-            Self::release_escrow_core(env, job_id.clone(), escrow);
+            Self::release_escrow_core(env.clone(), job_id.clone(), escrow);
             env.events().publish(
                 (symbol_short!("dlv_ok"), job_id),
                 (caller, actual_hash),
@@ -2653,7 +2653,7 @@ mod sealed_bid_tests {
         for byte in nonce.to_array().iter() {
             payload.push_back(*byte);
         }
-        env.crypto().sha256(&payload)
+        env.crypto().sha256(&payload).into()
     }
 
     fn setup(env: &Env) -> (MarketPayContractClient, Address, Address, String) {

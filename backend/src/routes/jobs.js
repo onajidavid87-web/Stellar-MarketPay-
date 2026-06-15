@@ -21,12 +21,23 @@ const {
   raiseDispute,
   resolveDispute,
   getRecommendedJobs,
+  incrementViewCount,
+  extendJobExpiry,
+  getSuggestions,
 } = jobService.default || jobService;
-const { inviteFreelancerToJob } = require("../services/jobInvitationService");
+
 const { logContractInteraction } = require("../services/contractAuditService");
+const { getClientReputation } = require("../services/profileService");
+const cache = require("../services/cacheService");
+const jobDraftService = require("../services/jobDraftService");
+const recommendationService = require("../services/recommendationService");
 
 const jobCreationRateLimiter = createRateLimiter(10, 1); // 10 job creations per minute
 const generalJobRateLimiter = createRateLimiter(100, 1); // 100 requests per minute
+const reportJobRateLimiter = createRateLimiter(20, 1);
+const suggestRateLimiter = createRateLimiter(20, 1);
+
+const jobReports = new Map();
 
 // Feed Helpers
 
@@ -115,7 +126,6 @@ async function enrichJobsWithClientReputation(jobs) {
  * /api/jobs:
  *   get:
  *     summary: List jobs
-              - clientAddress
  *     tags: [Jobs]
  *     parameters:
  *       - in: query
@@ -328,11 +338,11 @@ router.get("/:id", generalJobRateLimiter, async (req, res, next) => {
  *               - clientId
  *             properties:
  *               title:
-                clientAddress:
-                  type: string
-                  description: Client's Stellar address
  *                 type: string
  *                 description: Detailed job description
+ *               clientAddress:
+ *                 type: string
+ *                 description: Client's Stellar address
  *               budget:
  *                 type: number
  *                 description: Job budget in XLM

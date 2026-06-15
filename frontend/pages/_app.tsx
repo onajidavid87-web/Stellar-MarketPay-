@@ -28,6 +28,14 @@ import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { useBackgroundSync } from "@/hooks/useBackgroundSync";
 import "../lib/i18n";
 
+const WALLET_PUBLIC_KEY_STORAGE_KEY = "smp_wallet_public_key";
+const REF_STORAGE_KEY = "smp_referrer";
+
+function loadStoredPublicKey(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem(WALLET_PUBLIC_KEY_STORAGE_KEY);
+}
+
 function ThemeToggle() {
   const { theme, toggleTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -63,6 +71,7 @@ function App({ Component, pageProps }: AppProps) {
   } | null>(null);
   const [installDismissed, setInstallDismissed] = useState(false);
   const router = useRouter();
+  const isJobDetailPage = router.pathname === "/jobs/[id]";
 
   // Background sync: refresh the current page when the SW replays queued requests
   useBackgroundSync({

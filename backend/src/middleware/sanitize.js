@@ -151,11 +151,31 @@ function sanitizeMiddleware(options = {}) {
       }
 
       if (query && req.query) {
-        req.query = sanitizeObject(req.query, { strict });
+        const sanitized = sanitizeObject(req.query, { strict });
+        try {
+          req.query = sanitized;
+        } catch (e) {
+          Object.defineProperty(req, "query", {
+            value: sanitized,
+            configurable: true,
+            enumerable: true,
+            writable: true,
+          });
+        }
       }
 
       if (params && req.params) {
-        req.params = sanitizeObject(req.params, { strict });
+        const sanitized = sanitizeObject(req.params, { strict });
+        try {
+          req.params = sanitized;
+        } catch (e) {
+          Object.defineProperty(req, "params", {
+            value: sanitized,
+            configurable: true,
+            enumerable: true,
+            writable: true,
+          });
+        }
       }
 
       next();
