@@ -195,8 +195,14 @@ export interface ClientSpendingFreelancer {
   totalPaidXlm: string;
 }
 
+export interface ClientSpendingMonthly {
+  month: string; // "YYYY-MM"
+  totalSpentXlm: number;
+}
+
 export interface ClientSpendingAnalytics {
   totalSpentXlm: string;
+  totalBudgetXlm?: string;
   jobsBreakdown: {
     posted: number;
     completed: number;
@@ -207,6 +213,7 @@ export interface ClientSpendingAnalytics {
   averagePaidXlm: string;
   topFreelancers: ClientSpendingFreelancer[];
   hasCompletedJobs: boolean;
+  monthly?: ClientSpendingMonthly[];
 }
 
 export interface EscrowState {

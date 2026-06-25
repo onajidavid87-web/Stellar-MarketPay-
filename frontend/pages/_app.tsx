@@ -18,6 +18,8 @@ import {
   logout,
   registerReferral,
 } from "@/lib/api";
+import { useToast } from "@/components/Toast";
+import WalletAccountMonitor from "@/components/WalletAccountMonitor";
 import "@/styles/globals.css";
 import { ToastProvider } from "@/components/Toast";
 import { PriceProvider } from "@/contexts/PriceContext";
@@ -35,6 +37,7 @@ function loadStoredPublicKey(): string | null {
   if (typeof window === "undefined") return null;
   return localStorage.getItem(WALLET_PUBLIC_KEY_STORAGE_KEY);
 }
+
 
 function ThemeToggle() {
   const { theme, toggleTheme } = useTheme();
@@ -221,11 +224,19 @@ function App({ Component, pageProps }: AppProps) {
     }
   };
 
+  const handleWalletDisconnect = useCallback(() => {
+    persistPublicKey(null);
+  }, [persistPublicKey]);
+
   return (
     <>
       <ThemeProvider>
         <ToastProvider>
           <PriceProvider>
+            <WalletAccountMonitor
+              currentPublicKey={publicKey}
+              onDisconnect={handleWalletDisconnect}
+            />
             <Head>
               <title>Stellar MarketPay — Decentralised Freelance Marketplace</title>
               <meta name="description" content="Post jobs, hire freelancers, and pay with XLM — secured by Soroban smart contracts." />
