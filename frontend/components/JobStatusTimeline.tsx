@@ -2,51 +2,22 @@
  * components/JobStatusTimeline.tsx
  * Visual stepper showing job lifecycle progression.
  */
-"use client";
-
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { formatDate } from "@/utils/format";
-import type { Job, JobStatus } from "@/utils/types";
+import { rejectMilestone } from "@/lib/api";
+import type { Job, JobStatus, JobMilestone } from "@/utils/types";
 
 interface JobStatusTimelineProps {
   job: Job;
   compact?: boolean;
-  /** Resolved UTC timestamp for the escrow timeout ledger (from ledger_timestamps table). */
-  timeoutAt?: string | null;
-}
-
-/** Format remaining time as "Xd Xh Xm" or "Expired". */
-function formatCountdown(targetIso: string): string {
-  const ms = new Date(targetIso).getTime() - Date.now();
-  if (ms <= 0) return "Expired";
-  const totalSeconds = Math.floor(ms / 1000);
-  const days = Math.floor(totalSeconds / 86400);
-  const hours = Math.floor((totalSeconds % 86400) / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  if (days > 0) return `${days}d ${hours}h remaining`;
-  if (hours > 0) return `${hours}h ${minutes}m remaining`;
-  return `${minutes}m remaining`;
-}
-
-function EscrowCountdown({ timeoutAt }: { timeoutAt: string }) {
-  const [label, setLabel] = useState(() => formatCountdown(timeoutAt));
-
-  useEffect(() => {
-    const timer = setInterval(() => setLabel(formatCountdown(timeoutAt)), 60_000);
-    return () => clearInterval(timer);
-  }, [timeoutAt]);
-
-  const expired = label === "Expired";
-  return (
-    <span
-      className={[
-        "text-[10px] font-medium mt-0.5",
-        expired ? "text-red-400" : "text-amber-500",
-      ].join(" ")}
-    >
-      {label}
-    </span>
-  );
+  /**
+   * When provided, a "Reject" button is shown per milestone so the client can
+   * reject (and refund) an individual milestone. Should be the connected
+   * client's wallet address.
+   */
+  clientAddress?: string;
+  /** Called after a milestone is successfully rejected, to refresh the job. */
+  onMilestoneRejected?: () => void;
 }
 
 type StepState = "complete" | "current" | "upcoming" | "branch";
@@ -174,7 +145,86 @@ function Connector({ complete, vertical }: { complete: boolean; vertical?: boole
   );
 }
 
-export default function JobStatusTimeline({ job, compact = false, timeoutAt }: JobStatusTimelineProps) {
+function MilestoneRejectionList({
+  job,
+  clientAddress,
+  onMilestoneRejected,
+}: {
+  job: Job;
+  clientAddress: string;
+  onMilestoneRejected?: () => void;
+}) {
+  const milestones = job.milestones ?? [];
+  const [pendingIndex, setPendingIndex] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const canReject =
+    clientAddress === job.clientAddress && job.status === "in_progress";
+
+  if (!milestones.length || !canReject) return null;
+
+  async function handleReject(index: number) {
+    setError(null);
+    setPendingIndex(index);
+    try {
+      await rejectMilestone(job.id, clientAddress, index);
+      onMilestoneRejected?.();
+    } catch (e) {
+      setError(
+        e instanceof Error ? e.message : "Failed to reject milestone",
+      );
+    } finally {
+      setPendingIndex(null);
+    }
+  }
+
+  return (
+    <div className="mt-5 pt-5 border-t border-[rgba(251,191,36,0.07)]">
+      <p className="text-xs uppercase tracking-wider text-amber-800/70 mb-3">
+        Milestones
+      </p>
+      <ul className="space-y-2">
+        {milestones.map((milestone: JobMilestone, index: number) => {
+          const resolved =
+            milestone.status === "released" ||
+            milestone.status === "rejected" ||
+            milestone.status === "disputed";
+          return (
+            <li
+              key={index}
+              className="flex items-center justify-between gap-3 rounded-lg border border-market-500/15 bg-ink-800/40 px-3 py-2"
+            >
+              <div className="min-w-0">
+                <p className="text-sm text-market-100 truncate">
+                  {milestone.description}
+                </p>
+                <p className="text-[11px] text-amber-800/60">
+                  {milestone.amount} {job.currency} · {milestone.status}
+                </p>
+              </div>
+              <button
+                type="button"
+                disabled={resolved || pendingIndex !== null}
+                onClick={() => handleReject(index)}
+                className="flex-shrink-0 rounded-md border border-red-400/40 px-2.5 py-1 text-xs font-medium text-red-300 transition-colors hover:bg-red-500/10 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {pendingIndex === index ? "Rejecting…" : "Reject"}
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+      {error && <p className="mt-2 text-xs text-red-400">{error}</p>}
+    </div>
+  );
+}
+
+export default function JobStatusTimeline({
+  job,
+  compact = false,
+  clientAddress,
+  onMilestoneRejected,
+}: JobStatusTimelineProps) {
   const { steps, branch } = buildSteps(job);
 
   if (compact) {
@@ -312,6 +362,14 @@ export default function JobStatusTimeline({ job, compact = false, timeoutAt }: J
           </div>
         )}
       </div>
+
+      {clientAddress && (
+        <MilestoneRejectionList
+          job={job}
+          clientAddress={clientAddress}
+          onMilestoneRejected={onMilestoneRejected}
+        />
+      )}
     </div>
   );
 }
