@@ -56,10 +56,10 @@
           "function": {
             "contract_fn": {
               "contract_address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
-              "function_name": "create_escrow_with_deliverable",
+              "function_name": "create_escrow",
               "args": [
                 {
-                  "string": "deliverable-mismatch"
+                  "string": "ext-5"
                 },
                 {
                   "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M"
@@ -71,7 +71,7 @@
                         "symbol": "amount"
                       },
                       "val": {
-                        "i128": "1000"
+                        "i128": "500"
                       }
                     },
                     {
@@ -98,7 +98,9 @@
                       "key": {
                         "symbol": "timeout_ledgers"
                       },
-                      "val": "void"
+                      "val": {
+                        "u32": 10
+                      }
                     },
                     {
                       "key": {
@@ -109,9 +111,6 @@
                       }
                     }
                   ]
-                },
-                {
-                  "bytes": "0101010101010101010101010101010101010101010101010101010101010101"
                 }
               ]
             }
@@ -130,7 +129,7 @@
                       "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM"
                     },
                     {
-                      "i128": "1000"
+                      "i128": "500"
                     }
                   ]
                 }
@@ -148,13 +147,10 @@
           "function": {
             "contract_fn": {
               "contract_address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
-              "function_name": "submit_deliverable",
+              "function_name": "start_work",
               "args": [
                 {
-                  "string": "deliverable-mismatch"
-                },
-                {
-                  "bytes": "0202020202020202020202020202020202020202020202020202020202020202"
+                  "string": "ext-5"
                 },
                 {
                   "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4"
@@ -167,6 +163,53 @@
       ]
     ],
     [],
+    [
+      [
+        "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4",
+        {
+          "function": {
+            "contract_fn": {
+              "contract_address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
+              "function_name": "request_extension",
+              "args": [
+                {
+                  "string": "ext-5"
+                },
+                {
+                  "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4"
+                },
+                {
+                  "u32": 30
+                }
+              ]
+            }
+          },
+          "sub_invocations": []
+        }
+      ]
+    ],
+    [
+      [
+        "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M",
+        {
+          "function": {
+            "contract_fn": {
+              "contract_address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
+              "function_name": "approve_extension",
+              "args": [
+                {
+                  "string": "ext-5"
+                },
+                {
+                  "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M"
+                }
+              ]
+            }
+          },
+          "sub_invocations": []
+        }
+      ]
+    ],
     []
   ],
   "ledger": {
@@ -266,7 +309,7 @@
                             "symbol": "Escrow"
                           },
                           {
-                            "string": "deliverable-mismatch"
+                            "string": "ext-5"
                           }
                         ]
                       },
@@ -277,7 +320,7 @@
                               "symbol": "amount"
                             },
                             "val": {
-                              "i128": "1000"
+                              "i128": "500"
                             }
                           },
                           {
@@ -300,9 +343,7 @@
                             "key": {
                               "symbol": "deliverable_hash"
                             },
-                            "val": {
-                              "bytes": "0101010101010101010101010101010101010101010101010101010101010101"
-                            }
+                            "val": "void"
                           },
                           {
                             "key": {
@@ -317,7 +358,7 @@
                               "symbol": "job_id"
                             },
                             "val": {
-                              "string": "deliverable-mismatch"
+                              "string": "ext-5"
                             }
                           },
                           {
@@ -341,7 +382,7 @@
                             "val": {
                               "vec": [
                                 {
-                                  "symbol": "Disputed"
+                                  "symbol": "InProgress"
                                 }
                               ]
                             }
@@ -351,7 +392,7 @@
                               "symbol": "timeout_ledger"
                             },
                             "val": {
-                              "u32": 120960
+                              "u32": 30
                             }
                           },
                           {
@@ -384,12 +425,12 @@
                             "symbol": "TimeoutTimestamp"
                           },
                           {
-                            "string": "deliverable-mismatch"
+                            "string": "ext-5"
                           }
                         ]
                       },
                       "val": {
-                        "u32": 604800
+                        "u32": 604900
                       }
                     },
                     {
@@ -459,6 +500,46 @@
           "data": {
             "contract_data": {
               "ext": "v0",
+              "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M",
+              "key": {
+                "ledger_key_nonce": {
+                  "nonce": "4270020994084947596"
+                }
+              },
+              "durability": "temporary",
+              "val": "void"
+            }
+          },
+          "ext": "v0"
+        },
+        "live_until": 6311999
+      },
+      {
+        "entry": {
+          "last_modified_ledger_seq": 0,
+          "data": {
+            "contract_data": {
+              "ext": "v0",
+              "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4",
+              "key": {
+                "ledger_key_nonce": {
+                  "nonce": "2032731177588607455"
+                }
+              },
+              "durability": "temporary",
+              "val": "void"
+            }
+          },
+          "ext": "v0"
+        },
+        "live_until": 6311999
+      },
+      {
+        "entry": {
+          "last_modified_ledger_seq": 0,
+          "data": {
+            "contract_data": {
+              "ext": "v0",
               "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4",
               "key": {
                 "ledger_key_nonce": {
@@ -498,7 +579,7 @@
                       "symbol": "amount"
                     },
                     "val": {
-                      "i128": "1000"
+                      "i128": "500"
                     }
                   },
                   {
@@ -550,7 +631,7 @@
                       "symbol": "amount"
                     },
                     "val": {
-                      "i128": "0"
+                      "i128": "500"
                     }
                   },
                   {

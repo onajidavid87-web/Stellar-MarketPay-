@@ -56,10 +56,10 @@
           "function": {
             "contract_fn": {
               "contract_address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
-              "function_name": "create_escrow_with_deliverable",
+              "function_name": "create_escrow",
               "args": [
                 {
-                  "string": "deliverable-mismatch"
+                  "string": "ext-8"
                 },
                 {
                   "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M"
@@ -71,7 +71,7 @@
                         "symbol": "amount"
                       },
                       "val": {
-                        "i128": "1000"
+                        "i128": "500"
                       }
                     },
                     {
@@ -98,7 +98,9 @@
                       "key": {
                         "symbol": "timeout_ledgers"
                       },
-                      "val": "void"
+                      "val": {
+                        "u32": 10
+                      }
                     },
                     {
                       "key": {
@@ -109,9 +111,6 @@
                       }
                     }
                   ]
-                },
-                {
-                  "bytes": "0101010101010101010101010101010101010101010101010101010101010101"
                 }
               ]
             }
@@ -130,7 +129,7 @@
                       "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM"
                     },
                     {
-                      "i128": "1000"
+                      "i128": "500"
                     }
                   ]
                 }
@@ -138,31 +137,6 @@
               "sub_invocations": []
             }
           ]
-        }
-      ]
-    ],
-    [
-      [
-        "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4",
-        {
-          "function": {
-            "contract_fn": {
-              "contract_address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
-              "function_name": "submit_deliverable",
-              "args": [
-                {
-                  "string": "deliverable-mismatch"
-                },
-                {
-                  "bytes": "0202020202020202020202020202020202020202020202020202020202020202"
-                },
-                {
-                  "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4"
-                }
-              ]
-            }
-          },
-          "sub_invocations": []
         }
       ]
     ],
@@ -266,7 +240,7 @@
                             "symbol": "Escrow"
                           },
                           {
-                            "string": "deliverable-mismatch"
+                            "string": "ext-8"
                           }
                         ]
                       },
@@ -277,7 +251,7 @@
                               "symbol": "amount"
                             },
                             "val": {
-                              "i128": "1000"
+                              "i128": "500"
                             }
                           },
                           {
@@ -300,9 +274,7 @@
                             "key": {
                               "symbol": "deliverable_hash"
                             },
-                            "val": {
-                              "bytes": "0101010101010101010101010101010101010101010101010101010101010101"
-                            }
+                            "val": "void"
                           },
                           {
                             "key": {
@@ -317,7 +289,7 @@
                               "symbol": "job_id"
                             },
                             "val": {
-                              "string": "deliverable-mismatch"
+                              "string": "ext-8"
                             }
                           },
                           {
@@ -341,7 +313,7 @@
                             "val": {
                               "vec": [
                                 {
-                                  "symbol": "Disputed"
+                                  "symbol": "Locked"
                                 }
                               ]
                             }
@@ -351,7 +323,7 @@
                               "symbol": "timeout_ledger"
                             },
                             "val": {
-                              "u32": 120960
+                              "u32": 10
                             }
                           },
                           {
@@ -384,7 +356,7 @@
                             "symbol": "TimeoutTimestamp"
                           },
                           {
-                            "string": "deliverable-mismatch"
+                            "string": "ext-8"
                           }
                         ]
                       },
@@ -459,26 +431,6 @@
           "data": {
             "contract_data": {
               "ext": "v0",
-              "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4",
-              "key": {
-                "ledger_key_nonce": {
-                  "nonce": "4837995959683129791"
-                }
-              },
-              "durability": "temporary",
-              "val": "void"
-            }
-          },
-          "ext": "v0"
-        },
-        "live_until": 6311999
-      },
-      {
-        "entry": {
-          "last_modified_ledger_seq": 0,
-          "data": {
-            "contract_data": {
-              "ext": "v0",
               "contract": "CDLDVFKHEZ2RVB3NG4UQA4VPD3TSHV6XMHXMHP2BSGCJ2IIWVTOHGDSG",
               "key": {
                 "vec": [
@@ -498,7 +450,7 @@
                       "symbol": "amount"
                     },
                     "val": {
-                      "i128": "1000"
+                      "i128": "500"
                     }
                   },
                   {
@@ -550,7 +502,7 @@
                       "symbol": "amount"
                     },
                     "val": {
-                      "i128": "0"
+                      "i128": "500"
                     }
                   },
                   {
