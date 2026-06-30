@@ -21,7 +21,11 @@ const {
   releaseMilestone,
   rejectMilestone,
   disputeMilestone,
+<<<<<<< HEAD
   submitDeliverableHash,
+=======
+  verifyFreelancerAccount,
+>>>>>>> origin/main
 } = require("../services/escrowService");
 
 /**
@@ -328,6 +332,7 @@ router.get("/:jobId", escrowActionRateLimiter, async (req, res, next) => {
 });
 
 /**
+<<<<<<< HEAD
  * POST /api/escrow/:jobId/deliverable-hash
  * Freelancer submits the SHA-256 hash of the completed deliverable.
  * On-chain validation happens inside release_escrow; this records
@@ -368,5 +373,37 @@ router.post(
     }
   },
 );
+=======
+ * POST /api/escrow/verify-freelancer
+ * Verify that a freelancer Stellar account exists on the network before
+ * creating an escrow.
+ */
+router.post("/verify-freelancer", escrowActionRateLimiter, async (req, res, next) => {
+  try {
+    const { freelancerAddress } = req.body;
+
+    if (!freelancerAddress) {
+      const e = new Error("freelancerAddress is required");
+      e.status = 400;
+      throw e;
+    }
+
+    const exists = await verifyFreelancerAccount(freelancerAddress);
+
+    if (!exists) {
+      const e = new Error("Freelancer account not found on Stellar network");
+      e.status = 400;
+      throw e;
+    }
+
+    res.json({
+      success: true,
+      message: "Freelancer account verified on Stellar network",
+    });
+  } catch (e) {
+    next(e);
+  }
+});
+>>>>>>> origin/main
 
 module.exports = router;
