@@ -21,6 +21,7 @@ const {
   releaseMilestone,
   rejectMilestone,
   disputeMilestone,
+  verifyFreelancerAccount,
 } = require("../services/escrowService");
 
 /**
@@ -271,6 +272,7 @@ router.post("/:jobId/refund", async (req, res, next) => {
 /**
  * POST /api/escrow/:jobId/timeout-refund
  * Issue #175 — Client claims refund after freelancer inactivity timeout.
+ * Issue #536 — Uses service keypair with IP validation for contract calls.
  */
 router.post("/:jobId/timeout-refund", async (req, res, next) => {
   try {
@@ -283,19 +285,12 @@ router.post("/:jobId/timeout-refund", async (req, res, next) => {
       throw e;
     }
 
+    // Issue #536: Pass request for IP validation in service key usage
+    const result = await escrowService.timeoutRefund(jobId, clientAddress, contractTxHash, req);
+
     // DB status is updated asynchronously by the indexer when it processes the on-chain event.
 
-    await logContractInteraction({
-      functionName: "timeout_refund",
-      callerAddress: clientAddress,
-      jobId,
-      txHash: contractTxHash || `offchain-${Date.now()}`,
-    });
-
-    res.json({
-      success: true,
-      message: "Escrow refunded due to inactivity timeout",
-    });
+    res.json(result);
   } catch (e) {
     next(e);
   }
@@ -320,6 +315,38 @@ router.get("/:jobId", escrowActionRateLimiter, async (req, res, next) => {
     res.json({
       success: true,
       data: rows[0],
+    });
+  } catch (e) {
+    next(e);
+  }
+});
+
+/**
+ * POST /api/escrow/verify-freelancer
+ * Verify that a freelancer Stellar account exists on the network before
+ * creating an escrow.
+ */
+router.post("/verify-freelancer", escrowActionRateLimiter, async (req, res, next) => {
+  try {
+    const { freelancerAddress } = req.body;
+
+    if (!freelancerAddress) {
+      const e = new Error("freelancerAddress is required");
+      e.status = 400;
+      throw e;
+    }
+
+    const exists = await verifyFreelancerAccount(freelancerAddress);
+
+    if (!exists) {
+      const e = new Error("Freelancer account not found on Stellar network");
+      e.status = 400;
+      throw e;
+    }
+
+    res.json({
+      success: true,
+      message: "Freelancer account verified on Stellar network",
     });
   } catch (e) {
     next(e);
